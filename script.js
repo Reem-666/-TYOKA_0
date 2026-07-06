@@ -1,9 +1,60 @@
+const CORRECT_PASSWORD = 'tyoka';
+
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+    checkAuthStatus();
     loadTasks();
     updateDateTime();
     setInterval(updateDateTime, 60000); // Update time every minute
 });
+
+function checkAuthStatus() {
+    const isAuth = sessionStorage.getItem('tyoka_auth');
+    if (!isAuth) {
+        document.body.classList.add('locked');
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        
+        // Add Enter key listener for password input
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+        // Focus password input after a small delay
+        setTimeout(() => document.getElementById('passwordInput').focus(), 500);
+    } else {
+        document.getElementById('loginOverlay').classList.add('hidden');
+        document.body.classList.remove('locked');
+    }
+}
+
+function checkPassword() {
+    const passwordInput = document.getElementById('passwordInput');
+    const loginError = document.getElementById('loginError');
+    const overlay = document.getElementById('loginOverlay');
+    
+    if (passwordInput.value === CORRECT_PASSWORD) {
+        sessionStorage.setItem('tyoka_auth', 'true');
+        overlay.classList.add('hidden');
+        document.body.classList.remove('locked');
+        loginError.classList.remove('show');
+        
+        setTimeout(() => {
+            showToast('مرحباً بك مجدداً!', 'success', 'fa-unlock');
+        }, 500);
+    } else {
+        loginError.classList.add('show');
+        
+        const card = document.querySelector('.login-card');
+        card.style.animation = 'none';
+        card.offsetHeight;
+        card.style.animation = 'shake 0.4s';
+        
+        passwordInput.value = '';
+        passwordInput.focus();
+    }
+}
 
 // Update Date & Time
 function updateDateTime() {
